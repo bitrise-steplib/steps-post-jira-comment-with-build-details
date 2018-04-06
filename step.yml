@@ -1,0 +1,73 @@
+
+title: |-
+  Post Jira Comment
+summary: |
+  Post comment to an issue on Jira.
+description: |
+  Post comment to an issue on Jira.
+website: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
+source_code_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details.git
+support_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details/issues
+host_os_tags:
+  - osx-10.10
+  - ubuntu-16.04
+
+type_tags:
+  - notification
+
+is_requires_admin_user: false
+is_always_run: false
+is_skippable: true
+run_if: ""
+
+toolkit:
+  go:
+    package_name: github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
+
+
+inputs:
+  - jira_user_name:
+    opts:
+      title: Jira user name
+      summary: User name on Jira.
+      description: User name on Jira.
+      is_expand: true
+      is_required: true
+      value_options: []
+
+  - jira_api_token:
+    opts:
+      title: Jira api token
+      summary: Api token generated on Jira.
+      description: Api token generated on Jira.
+      is_expand: true
+      is_required: true
+      value_options: []
+
+  - jira_issue_keys:
+    opts:
+      title: Jira issue keys
+      summary: Jira issue keys separatad with `|`
+      description: Jira issue keys separatad with `|`
+      is_expand: true
+      is_required: true
+      value_options: []
+
+  - jira_base_url:
+    opts:
+      title: Jira base URL.
+      summary: URL of the presonal Jira.
+      description: URL of the presonal Jira.
+      is_expand: true
+      is_required: true
+      value_options: []
+
+  - comment:
+    opts:
+      title:  Jira issue comment 
+      summary: The comment which you want to post to the Jira issues.
+      description: The comment which you want to post to the Jira issues.
+      is_expand: true
+      is_required: true
+      value_options: []
+      
