@@ -8,13 +8,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
-	"strings"
-	"time"
 
 	"github.com/bitrise-io/go-utils/colorstring"
 
 	"github.com/bitrise-io/go-utils/log"
-	"github.com/bitrise-io/go-utils/retry"
 	"github.com/bitrise-io/go-utils/urlutil"
 )
 
@@ -44,9 +41,9 @@ type response struct {
 }
 
 func (resp response) String() string {
-	if resp.err != nil {
-		return fmt.Sprintf("error during posting comment to - %s -, error: %s", resp.issueKey, resp.err.Error())
-	}
+	// if resp.err != nil {
+	// 	return fmt.Sprintf("error during posting comment to - %s -, error: %s", resp.issueKey, resp.err.Error())
+	// }
 
 	respValue := map[bool]string{true: colorstring.Green("SUCCES"), false: colorstring.Red("FAILED")}[resp.succes]
 	return fmt.Sprintf("Posting comment to - %s - : %s", resp.issueKey, respValue)
@@ -73,14 +70,29 @@ func (client *Client) PostIssueComments(comments []Comment) error {
 	}
 
 	counter := 0
+	var errs []error
 	for resp := range ch {
 		counter++
 		log.Printf(resp.String())
+
+		if resp.err != nil {
+			errs = append(errs, resp.err)
+		}
 
 		if counter >= len(comments) {
 			break
 		}
 	}
+
+	if len(errs) > 0 {
+		fmt.Println()
+		log.Infof("Errors during posting comments:")
+	}
+
+	for _, err := range errs {
+		log.Warnf(err.Error())
+	}
+
 	return nil
 }
 
@@ -90,6 +102,9 @@ func (client *Client) PostIssueComments(comments []Comment) error {
 func (client *Client) postIssueComment(comment Comment, ch chan response) {
 	headers := client.headers
 	requestURL, err := urlutil.Join(client.url, apiEndPoint, comment.IssuKey, commentEndPoint)
+	if err != nil {
+		ch <- response{comment.IssuKey, false, err}
+	}
 
 	fields := map[string]interface{}{
 		"body": comment.Content,
@@ -104,6 +119,7 @@ func (client *Client) postIssueComment(comment Comment, ch chan response) {
 	_, body, err := RunRequest(client, request, nil)
 	if err != nil {
 		ch <- response{comment.IssuKey, false, err}
+		return
 	}
 
 	log.Debugf("Body: %s", string(body))
@@ -167,32 +183,20 @@ func performRequest(client *Client, request *http.Request) (body []byte, statusC
 func RunRequest(client *Client, req *http.Request, requestResponse interface{}) (interface{}, []byte, error) {
 	var responseBody []byte
 
-	if err := retry.Times(1).Wait(5 * time.Second).Try(func(attempt uint) error {
-		body, statusCode, err := performRequest(client, req)
-		if err != nil {
-			log.Warnf("Attempt (%d) failed, error: %s", attempt+1, err)
-			if !strings.Contains(err.Error(), "failed to perform request") {
-				log.Warnf("Response status: %d", statusCode)
-				log.Warnf("Body: %s", string(body))
-			}
-			return err
-		}
-
-		// Parse JSON body
-		if requestResponse != nil {
-			if err := json.Unmarshal([]byte(body), &requestResponse); err != nil {
-				return fmt.Errorf("failed to unmarshal response (%s), error: %s", body, err)
-			}
-
-			logDebugPretty(&requestResponse)
-		}
-		responseBody = body
-
-		return nil
-	}); err != nil {
-		return nil, nil, err
+	body, statusCode, err := performRequest(client, req)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Response status: %d\nBody: %s", statusCode, string(body))
 	}
 
+	// Parse JSON body
+	if requestResponse != nil {
+		if err := json.Unmarshal([]byte(body), &requestResponse); err != nil {
+			return nil, nil, fmt.Errorf("failed to unmarshal response (%s), error: %s", body, err)
+		}
+
+		logDebugPretty(&requestResponse)
+	}
+	responseBody = body
 	return requestResponse, responseBody, nil
 }
 

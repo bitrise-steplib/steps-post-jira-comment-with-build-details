@@ -99,6 +99,8 @@ workflows:
             Build URL: ${BITRISE_BUILD_URL}
 
   test:
+    before_run:
+    - go-test
     steps:
     - change-workdir:
         title: Switch working dir to test / _tmp dir
@@ -118,8 +120,16 @@ workflows:
         - jira_api_token: ${BITRISE_JIRA_API_TOKEN}
         - jira_issue_keys: ${BITRISE_JIRA_ISSUE_KEYS}
         - jira_base_url: ${BITRISE_JIRA_BASE_URL}
-        - comment: ${COMMENT}
+        # - message: |-
+        #    *$BITRISE_APP_TITLE* build *$BITRISE_BUILD_NUMBER* is now available: [Download|$BITRISE_PUBLIC_INSTALL_PAGE_URL]\n
 
+        #    ||Build number|$BITRISE_BUILD_NUMBER|\n
+        #    ||Author|$GIT_CLONE_COMMIT_AUTHOR_NAME|\n
+        #    ||Branch|$BITRISE_GIT_BRANCH|\n
+        #    ||Commit hash|$GIT_CLONE_COMMIT_HASH|\n
+        #    ||Commit message|$GIT_CLONE_COMMIT_MESSAGE_SUBJECT|\n
+
+        #    [Show build details|$BITRISE_BUILD_URL]
 
   _prepare-and-setup:
     title: Prepare bitrise and install testing tools

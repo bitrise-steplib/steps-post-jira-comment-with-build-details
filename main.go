@@ -16,7 +16,7 @@ type config struct {
 	JiraAPIToken string `env:"jira_api_token,required"`
 	JiraBaseURL  string `env:"jira_base_url,required"`
 	JiraIsueKeys string `env:"jira_issue_keys,required"`
-	Comment      string `env:"comment,required"`
+	Message      string `env:"jira_build_message,required"`
 }
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 
 	var comments []network.Comment
 	for _, issueKey := range issueKeys {
-		comments = append(comments, network.Comment{Content: cfg.Comment, IssuKey: issueKey})
+		comments = append(comments, network.Comment{Content: cfg.Message, IssuKey: issueKey})
 	}
 
 	if err := client.PostIssueComments(comments); err != nil {

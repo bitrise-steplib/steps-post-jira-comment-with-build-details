@@ -62,11 +62,19 @@ inputs:
       is_required: true
       value_options: []
 
-  - comment:
+  - jira_build_message: |
+      *$BITRISE_APP_TITLE* build *$BITRISE_BUILD_NUMBER* is now available: [Download|$BITRISE_PUBLIC_INSTALL_PAGE_URL]
+      ||Build number|$BITRISE_BUILD_NUMBER|
+      ||Author|$GIT_CLONE_COMMIT_AUTHOR_NAME|
+      ||Branch|$BITRISE_GIT_BRANCH|
+      ||Commit hash|$GIT_CLONE_COMMIT_HASH|
+      ||Commit message|$GIT_CLONE_COMMIT_MESSAGE_SUBJECT|
+
+      [Show build details|$BITRISE_BUILD_URL]
     opts:
-      title:  Jira issue comment 
-      summary: The comment which you want to post to the Jira issues.
-      description: The comment which you want to post to the Jira issues.
+      title: "Build message"
+      summary: "The content of the build message that will be posted"
+      description: "The content of the build message that will be posted. You can use markdown. Details [here|https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all]"
       is_expand: true
       is_required: true
       value_options: []
