@@ -10,7 +10,6 @@ import (
 	"net/http/httputil"
 
 	"github.com/bitrise-io/go-utils/colorstring"
-
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/urlutil"
 )
@@ -41,10 +40,6 @@ type response struct {
 }
 
 func (resp response) String() string {
-	// if resp.err != nil {
-	// 	return fmt.Sprintf("error during posting comment to - %s -, error: %s", resp.issueKey, resp.err.Error())
-	// }
-
 	respValue := map[bool]string{true: colorstring.Green("SUCCES"), false: colorstring.Red("FAILED")}[resp.succes]
 	return fmt.Sprintf("Posting comment to - %s - : %s", resp.issueKey, respValue)
 }
@@ -64,19 +59,18 @@ func (client *Client) PostIssueComments(comments []Comment) error {
 	}
 
 	ch := make(chan response, len(comments))
-
 	for _, comment := range comments {
 		go client.postIssueComment(comment, ch)
 	}
 
 	counter := 0
-	var errs []error
+	var respErrors []response
 	for resp := range ch {
 		counter++
 		log.Printf(resp.String())
 
 		if resp.err != nil {
-			errs = append(errs, resp.err)
+			respErrors = append(respErrors, resp)
 		}
 
 		if counter >= len(comments) {
@@ -84,16 +78,19 @@ func (client *Client) PostIssueComments(comments []Comment) error {
 		}
 	}
 
-	if len(errs) > 0 {
+	if len(respErrors) > 0 {
 		fmt.Println()
 		log.Infof("Errors during posting comments:")
 	}
 
-	for _, err := range errs {
-		log.Warnf(err.Error())
+	for _, respErr := range respErrors {
+		log.Warnf("Error during posting comment to - %s - : %s", respErr.issueKey, respErr.err.Error())
 	}
 
-	return nil
+	if len(respErrors) > 0 {
+		fmt.Println()
+	}
+	return map[bool]error{true: fmt.Errorf("some comments were failed to be posted at Jira"), false: nil}[len(respErrors) > 0]
 }
 
 // -------------------------------------
@@ -104,6 +101,7 @@ func (client *Client) postIssueComment(comment Comment, ch chan response) {
 	requestURL, err := urlutil.Join(client.url, apiEndPoint, comment.IssuKey, commentEndPoint)
 	if err != nil {
 		ch <- response{comment.IssuKey, false, err}
+		return
 	}
 
 	fields := map[string]interface{}{
@@ -113,6 +111,7 @@ func (client *Client) postIssueComment(comment Comment, ch chan response) {
 	request, err := createRequest(http.MethodPost, requestURL, headers, fields)
 	if err != nil {
 		ch <- response{comment.IssuKey, false, err}
+		return
 	}
 
 	// Perform request
@@ -185,7 +184,7 @@ func RunRequest(client *Client, req *http.Request, requestResponse interface{}) 
 
 	body, statusCode, err := performRequest(client, req)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Response status: %d\nBody: %s", statusCode, string(body))
+		return nil, nil, fmt.Errorf("Response status: %d - Body: %s", statusCode, string(body))
 	}
 
 	// Parse JSON body

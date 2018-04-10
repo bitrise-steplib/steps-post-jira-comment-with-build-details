@@ -30,9 +30,7 @@ func main() {
 	fmt.Println()
 
 	encodedToken := generateBase64APIToken(cfg.JiraUserName, cfg.JiraAPIToken)
-
 	client := network.New(encodedToken, cfg.JiraBaseURL)
-
 	issueKeys := strings.Split(cfg.JiraIsueKeys, `|`)
 
 	var comments []network.Comment
@@ -41,7 +39,7 @@ func main() {
 	}
 
 	if err := client.PostIssueComments(comments); err != nil {
-		failf("posting comments failed with error: %s", err)
+		failf("Posting comments failed with error: %s", err)
 	}
 
 	fmt.Println()
