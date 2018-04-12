@@ -81,45 +81,27 @@ workflows:
     - _prepare-and-setup
     - test
     steps:
-    - slack:
-        title: Slack notifications
-        run_if: ".IsCI"
-        inputs:
-        - webhook_url: "$INTERNAL_DEV_SLACK_WEBHOOK_URL"
-        - channel: "$INTERNAL_DEV_LIFELINE_SLACK_CHANNEL"
-        - from_username: "${BIN_NAME} - CI - OK"
-        - from_username_on_error: "${BIN_NAME} - CI - ERROR"
-        - message: |-
-            CI was successful on branch: *${BITRISE_GIT_BRANCH}*
-
-            Build URL: ${BITRISE_BUILD_URL}
-        - message_on_error: |-
-            CI FAILED on branch: *${BITRISE_GIT_BRANCH}*
-
-            Build URL: ${BITRISE_BUILD_URL}
 
   test:
     before_run:
-    - go-test
+    - audit-this-step
     steps:
+    - go-list:
+    - golint:
+    - errcheck:
+    - go-test:
     - change-workdir:
-        title: Switch working dir to test / _tmp dir
-        description: |-
-          To prevent step testing issues, like referencing relative
-          files with just './some-file' in the step's code, which would
-          work for testing the step from this directory directly
-          but would break if the step is included in another `bitrise.yml`.
-        run_if: true
+        title: Switch working dir to ./_tmp dir
         inputs:
         - path: ./_tmp
         - is_create_path: true
     - path::./:
         title: Step Test
         inputs:
-        - jira_user_name: ${BITRISE_JIRA_USER_NAME}
-        - jira_api_token: ${BITRISE_JIRA_API_TOKEN}
-        - jira_issue_keys: ${BITRISE_JIRA_ISSUE_KEYS}
-        - jira_base_url: ${BITRISE_JIRA_BASE_URL}
+        - user_name: ${BITRISE_JIRA_USER_NAME}
+        - api_token: ${BITRISE_JIRA_API_TOKEN}
+        - issue_keys: ${BITRISE_JIRA_ISSUE_KEYS}
+        - base_url: ${BITRISE_JIRA_BASE_URL}
 
   _prepare-and-setup:
     title: Prepare bitrise and install testing tools

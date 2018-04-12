@@ -1,4 +1,4 @@
-package network
+package jira
 
 import (
 	"bytes"
@@ -47,9 +47,9 @@ func (resp response) String() string {
 // -------------------------------------
 // -- Public methods
 
-// New ...
-func New(token string, requestURL string) *Client {
-	return &Client{token, &http.Client{}, map[string]string{"Authorization": `Basic ` + token, "Content-Type": "application/json"}, requestURL}
+// NewClient ...
+func NewClient(token, requestURL string) *Client {
+	return &Client{token: token, client: &http.Client{}, headers: map[string]string{"Authorization": `Basic ` + token, "Content-Type": "application/json"}, url: requestURL}
 }
 
 // PostIssueComments ...

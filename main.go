@@ -7,20 +7,21 @@ import (
 	"strings"
 
 	"github.com/bitrise-io/go-utils/log"
-	"github.com/bitrise-steplib/steps-post-jira-comment-with-build-details/network"
+	"github.com/bitrise-steplib/steps-post-jira-comment-with-build-details/jira"
 	"github.com/bitrise-tools/go-steputils/stepconf"
 )
 
-type config struct {
-	JiraUserName string `env:"jira_user_name,required"`
-	JiraAPIToken string `env:"jira_api_token,required"`
-	JiraBaseURL  string `env:"jira_base_url,required"`
-	JiraIsueKeys string `env:"jira_issue_keys,required"`
-	Message      string `env:"jira_build_message,required"`
+// Config ...
+type Config struct {
+	UserName string `env:"user_name,required"`
+	APIToken string `env:"api_token,required"`
+	BaseURL  string `env:"base_url,required"`
+	IsueKeys string `env:"issue_keys,required"`
+	Message  string `env:"build_message,required"`
 }
 
 func main() {
-	var cfg config
+	var cfg Config
 	if err := stepconf.Parse(&cfg); err != nil {
 		log.Errorf("Error: %s\n", err)
 		os.Exit(1)
@@ -29,13 +30,13 @@ func main() {
 	stepconf.Print(cfg)
 	fmt.Println()
 
-	encodedToken := generateBase64APIToken(cfg.JiraUserName, cfg.JiraAPIToken)
-	client := network.New(encodedToken, cfg.JiraBaseURL)
-	issueKeys := strings.Split(cfg.JiraIsueKeys, `|`)
+	encodedToken := generateBase64APIToken(cfg.UserName, cfg.APIToken)
+	client := jira.NewClient(encodedToken, cfg.BaseURL)
+	issueKeys := strings.Split(cfg.IsueKeys, `|`)
 
-	var comments []network.Comment
+	var comments []jira.Comment
 	for _, issueKey := range issueKeys {
-		comments = append(comments, network.Comment{Content: cfg.Message, IssuKey: issueKey})
+		comments = append(comments, jira.Comment{Content: cfg.Message, IssuKey: issueKey})
 	}
 
 	if err := client.PostIssueComments(comments); err != nil {

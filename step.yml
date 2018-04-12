@@ -29,7 +29,7 @@ toolkit:
 
 
 inputs:
-  - jira_user_name:
+  - user_name:
     opts:
       title: Jira user name
       summary: User name on Jira (user's email).
@@ -38,7 +38,7 @@ inputs:
       is_required: true
       value_options: []
 
-  - jira_api_token:
+  - api_token:
     opts:
       title: Jira api token
       summary: Api token generated on Jira.
@@ -47,7 +47,7 @@ inputs:
       is_required: true
       value_options: []
 
-  - jira_issue_keys:
+  - issue_keys:
     opts:
       title: Jira issue keys
       summary: Jira issue keys separatad with `|`
@@ -56,7 +56,7 @@ inputs:
       is_required: true
       value_options: []
 
-  - jira_base_url:
+  - base_url:
     opts:
       title: Jira base URL.
       summary: URL of the presonal Jira software.
@@ -65,7 +65,7 @@ inputs:
       is_required: true
       value_options: []
 
-  - jira_build_message: |
+  - build_message: |
       *$BITRISE_APP_TITLE* build *$BITRISE_BUILD_NUMBER* is now available: [Download|$BITRISE_PUBLIC_INSTALL_PAGE_URL]
       ||Build number|$BITRISE_BUILD_NUMBER|
       ||Author|$GIT_CLONE_COMMIT_AUTHOR_NAME|
