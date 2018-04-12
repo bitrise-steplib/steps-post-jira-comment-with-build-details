@@ -3,10 +3,7 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - BITRISE_STEP_ID: post-jira-comment
   - BITRISE_STEP_VERSION: "0.9.0"
-  - BITRISE_STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
-  - MY_bitrise-steplib_REPO_FORK_GIT_URL: $MY_bitrise-steplib_REPO_FORK_GIT_URL
 
   - BITRISE_JIRA_USER_NAME: $BITRISE_JIRA_USER_NAME
   - BITRISE_JIRA_API_TOKEN: $BITRISE_JIRA_API_TOKEN
@@ -14,74 +11,6 @@ app:
   - BITRISE_JIRA_ISSUE_KEYS: $BITRISE_JIRA_ISSUE_KEYS
 
 workflows:
-  dep-update:
-    title: Dep update
-    description: |
-      Used for updating bitrise dependencies with dep
-    steps:
-    - script:
-        title: Dependency update
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ex
-            go get -u -v github.com/golang/dep/cmd/dep
-            dep ensure -v
-            dep ensure -v -update
-
-  go-test:
-    steps:
-    - script:
-        title: Export go files to test
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            no_vendor_paths="$(go list ./... | grep -v vendor)"
-            envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
-    - script:
-        title: Err check
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            go get -u github.com/kisielk/errcheck
-            errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
-    - script:
-        title: Go lint
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            go get -u github.com/golang/lint/golint
-            while read -r line; do
-              echo "-> Linting: $line"
-              golint_out="$(golint $line)"
-              if [[ "${golint_out}" != "" ]] ; then
-                echo "=> Golint issues found:"
-                echo "${golint_out}"
-                exit 1
-              fi
-            done <<< "$GOLIST_WITHOUT_VENDOR"
-    - script:
-        title: Go test
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            go test $(go list ./... | grep -v vendor)
-
-  ci:
-    title: Bitrise CI
-    description: |
-      1, Git clone bitrise repo and install testing tools
-      2, Run tests
-      3, Announce test result
-    before_run:
-    - _prepare-and-setup
-    - test
-    steps:
-
   test:
     before_run:
     - audit-this-step
@@ -103,27 +32,24 @@ workflows:
         - issue_keys: ${BITRISE_JIRA_ISSUE_KEYS}
         - base_url: ${BITRISE_JIRA_BASE_URL}
 
-  _prepare-and-setup:
-    title: Prepare bitrise and install testing tools
+# ----------------------------------------------------------------
+ # --- Utility workflows
+
+  dep-update:
+    title: Dep update
     description: |
-        Prepares the environment for testing
+      Used for updating bitrise dependencies with dep
     steps:
     - script:
-        is_skippable: true
-        inputs:
-        - content: brew update
-    - script:
-        title: Install testing tools
+        title: Dependency update
         inputs:
         - content: |-
-            #!/usr/bin/env bash
+            #!/bin/bash
             set -ex
+            go get -u -v github.com/golang/dep/cmd/dep
+            dep ensure -v
+            dep ensure -v -update
 
-            # Check for unhandled errors
-            go get -u -v github.com/kisielk/errcheck
-
-            # Go lint
-            go get -u -v github.com/golang/lint/golint
 
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
@@ -139,10 +65,10 @@ workflows:
   share-this-step:
     envs:
       # if you want to share this step into a bitrise-steplib
+      - BITRISE_STEP_ID: post-jira-comment
+      - BITRISE_STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
       - MY_bitrise-steplib_REPO_FORK_GIT_URL: $MY_bitrise-steplib_REPO_FORK_GIT_URL
-      - BITRISE_STEP_ID: $BITRISE_STEP_ID
       - BITRISE_STEP_VERSION: $BITRISE_STEP_VERSION
-      - BITRISE_STEP_GIT_CLONE_URL: $BITRISE_STEP_GIT_CLONE_URL
     description: |-
       If this is the first time you try to share a Step you should
       first call: $ bitrise share
