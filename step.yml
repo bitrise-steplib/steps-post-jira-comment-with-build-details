@@ -27,43 +27,34 @@ toolkit:
   go:
     package_name: github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
 
-
 inputs:
   - user_name:
     opts:
       title: Jira user name
       summary: User name on Jira (user's email).
       description: User name on Jira (user's email).
-      is_expand: true
       is_required: true
-      value_options: []
 
   - api_token:
     opts:
       title: Jira api token
       summary: Api token generated on Jira.
       description: Api token generated on Jira.
-      is_expand: true
       is_required: true
-      value_options: []
 
   - issue_keys:
     opts:
       title: Jira issue keys
       summary: Jira issue keys separatad with `|`
       description: Jira issue keys separatad with `|`
-      is_expand: true
       is_required: true
-      value_options: []
 
   - base_url:
     opts:
       title: Jira base URL.
       summary: URL of the presonal Jira software.
       description: URL of the presonal Jira software.
-      is_expand: true
       is_required: true
-      value_options: []
 
   - build_message: |
       *$BITRISE_APP_TITLE* build *$BITRISE_BUILD_NUMBER* is now available: [Download|$BITRISE_PUBLIC_INSTALL_PAGE_URL]
@@ -78,7 +69,5 @@ inputs:
       title: "Build message"
       summary: "The content of the build message that will be posted"
       description: "The content of the build message that will be posted. You can use markdown. Details [here|https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all]"
-      is_expand: true
       is_required: true
-      value_options: []
       

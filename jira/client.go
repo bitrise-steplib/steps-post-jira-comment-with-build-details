@@ -35,12 +35,11 @@ type Comment struct {
 
 type response struct {
 	issueKey string
-	succes   bool
 	err      error
 }
 
 func (resp response) String() string {
-	respValue := map[bool]string{true: colorstring.Green("SUCCES"), false: colorstring.Red("FAILED")}[resp.succes]
+	respValue := map[bool]string{true: colorstring.Green("SUCCES"), false: colorstring.Red("FAILED")}[resp.err == nil]
 	return fmt.Sprintf("Posting comment to - %s - : %s", resp.issueKey, respValue)
 }
 
@@ -49,7 +48,15 @@ func (resp response) String() string {
 
 // NewClient ...
 func NewClient(token, requestURL string) *Client {
-	return &Client{token: token, client: &http.Client{}, headers: map[string]string{"Authorization": `Basic ` + token, "Content-Type": "application/json"}, url: requestURL}
+	return &Client{
+		token:  token,
+		client: &http.Client{},
+		headers: map[string]string{
+			"Authorization": `Basic ` + token,
+			"Content-Type":  "application/json",
+		},
+		url: requestURL,
+	}
 }
 
 // PostIssueComments ...
@@ -81,15 +88,14 @@ func (client *Client) PostIssueComments(comments []Comment) error {
 	if len(respErrors) > 0 {
 		fmt.Println()
 		log.Infof("Errors during posting comments:")
-	}
 
-	for _, respErr := range respErrors {
-		log.Warnf("Error during posting comment to - %s - : %s", respErr.issueKey, respErr.err.Error())
-	}
+		for _, respErr := range respErrors {
+			log.Warnf("Error during posting comment to - %s - : %s", respErr.issueKey, respErr.err.Error())
+		}
 
-	if len(respErrors) > 0 {
 		fmt.Println()
 	}
+
 	return map[bool]error{true: fmt.Errorf("some comments were failed to be posted at Jira"), false: nil}[len(respErrors) > 0]
 }
 
@@ -97,10 +103,9 @@ func (client *Client) PostIssueComments(comments []Comment) error {
 // -- Private methods
 
 func (client *Client) postIssueComment(comment Comment, ch chan response) {
-	headers := client.headers
 	requestURL, err := urlutil.Join(client.url, apiEndPoint, comment.IssuKey, commentEndPoint)
 	if err != nil {
-		ch <- response{comment.IssuKey, false, err}
+		ch <- response{comment.IssuKey, err}
 		return
 	}
 
@@ -108,21 +113,21 @@ func (client *Client) postIssueComment(comment Comment, ch chan response) {
 		"body": comment.Content,
 	}
 
-	request, err := createRequest(http.MethodPost, requestURL, headers, fields)
+	request, err := createRequest(http.MethodPost, requestURL, client.headers, fields)
 	if err != nil {
-		ch <- response{comment.IssuKey, false, err}
+		ch <- response{comment.IssuKey, err}
 		return
 	}
 
 	// Perform request
 	_, body, err := RunRequest(client, request, nil)
 	if err != nil {
-		ch <- response{comment.IssuKey, false, err}
+		ch <- response{comment.IssuKey, err}
 		return
 	}
 
 	log.Debugf("Body: %s", string(body))
-	ch <- response{comment.IssuKey, true, nil}
+	ch <- response{comment.IssuKey, nil}
 }
 
 func createRequest(requestMethod string, url string, headers map[string]string, fields map[string]interface{}) (*http.Request, error) {
@@ -130,8 +135,7 @@ func createRequest(requestMethod string, url string, headers map[string]string, 
 
 	if len(fields) > 0 {
 		var err error
-		jsonContent, err = json.Marshal(fields)
-		if err != nil {
+		if jsonContent, err = json.Marshal(fields); err != nil {
 			return nil, err
 		}
 	}
@@ -180,8 +184,6 @@ func performRequest(client *Client, request *http.Request) (body []byte, statusC
 
 // RunRequest ...
 func RunRequest(client *Client, req *http.Request, requestResponse interface{}) (interface{}, []byte, error) {
-	var responseBody []byte
-
 	body, statusCode, err := performRequest(client, req)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Response status: %d - Body: %s", statusCode, string(body))
@@ -195,8 +197,7 @@ func RunRequest(client *Client, req *http.Request, requestResponse interface{}) 
 
 		logDebugPretty(&requestResponse)
 	}
-	responseBody = body
-	return requestResponse, responseBody, nil
+	return requestResponse, body, nil
 }
 
 func addHeaders(req *http.Request, headers map[string]string) {
@@ -206,10 +207,10 @@ func addHeaders(req *http.Request, headers map[string]string) {
 }
 
 func logDebugPretty(v interface{}) {
-	indentedBytes, err := json.MarshalIndent(v, "", "  ")
+	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 
-	log.Debugf("Response: %+v\n", string(indentedBytes))
+	log.Debugf("Response: %+v\n", string(b))
 }

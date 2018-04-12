@@ -32,7 +32,7 @@ workflows:
         - issue_keys: ${BITRISE_JIRA_ISSUE_KEYS}
         - base_url: ${BITRISE_JIRA_BASE_URL}
 
-# ----------------------------------------------------------------
+ # ----------------------------------------------------------------
  # --- Utility workflows
 
   dep-update:
@@ -49,7 +49,6 @@ workflows:
             go get -u -v github.com/golang/dep/cmd/dep
             dep ensure -v
             dep ensure -v -update
-
 
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
