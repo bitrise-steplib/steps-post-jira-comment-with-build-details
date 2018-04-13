@@ -3,7 +3,6 @@ package jira
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,7 +23,7 @@ type Client struct {
 	token   string
 	client  *http.Client
 	headers map[string]string
-	url     string
+	baseURL string
 }
 
 // Comment ...
@@ -47,7 +46,7 @@ func (resp response) String() string {
 // -- Public methods
 
 // NewClient ...
-func NewClient(token, requestURL string) *Client {
+func NewClient(token, baseURL string) *Client {
 	return &Client{
 		token:  token,
 		client: &http.Client{},
@@ -55,7 +54,7 @@ func NewClient(token, requestURL string) *Client {
 			"Authorization": `Basic ` + token,
 			"Content-Type":  "application/json",
 		},
-		url: requestURL,
+		baseURL: baseURL,
 	}
 }
 
@@ -96,22 +95,20 @@ func (client *Client) PostIssueComments(comments []Comment) error {
 		fmt.Println()
 	}
 
-	return map[bool]error{true: fmt.Errorf("some comments were failed to be posted at Jira"), false: nil}[len(respErrors) > 0]
+	return map[bool]error{true: fmt.Errorf("some comments were failed to be posted at Jira")}[len(respErrors) > 0]
 }
 
 // -------------------------------------
 // -- Private methods
 
 func (client *Client) postIssueComment(comment Comment, ch chan response) {
-	requestURL, err := urlutil.Join(client.url, apiEndPoint, comment.IssuKey, commentEndPoint)
+	requestURL, err := urlutil.Join(client.baseURL, apiEndPoint, comment.IssuKey, commentEndPoint)
 	if err != nil {
 		ch <- response{comment.IssuKey, err}
 		return
 	}
 
-	fields := map[string]interface{}{
-		"body": comment.Content,
-	}
+	fields := map[string]interface{}{"body": comment.Content}
 
 	request, err := createRequest(http.MethodPost, requestURL, client.headers, fields)
 	if err != nil {
@@ -120,14 +117,9 @@ func (client *Client) postIssueComment(comment Comment, ch chan response) {
 	}
 
 	// Perform request
-	_, body, err := RunRequest(client, request, nil)
-	if err != nil {
-		ch <- response{comment.IssuKey, err}
-		return
-	}
-
+	_, body, err := client.performRequest(request, nil)
 	log.Debugf("Body: %s", string(body))
-	ch <- response{comment.IssuKey, nil}
+	ch <- response{comment.IssuKey, err}
 }
 
 func createRequest(requestMethod string, url string, headers map[string]string, fields map[string]interface{}) (*http.Request, error) {
@@ -156,37 +148,27 @@ func createRequest(requestMethod string, url string, headers map[string]string, 
 	return req, nil
 }
 
-func performRequest(client *Client, request *http.Request) (body []byte, statusCode int, err error) {
-	response, err := client.client.Do(request)
+func (client *Client) performRequest(req *http.Request, requestResponse interface{}) (interface{}, []byte, error) {
+	response, err := client.client.Do(req)
 	if err != nil {
 		// On error, any Response can be ignored
-		return nil, -1, fmt.Errorf("failed to perform request, error: %s", err)
+		return nil, nil, fmt.Errorf("failed to perform request, error: %s", err)
 	}
 
 	// The client must close the response body when finished with it
 	defer func() {
-		if cerr := response.Body.Close(); err != nil {
-			cerr = fmt.Errorf("Failed to close response body, error: %s", cerr)
+		if cerr := response.Body.Close(); cerr != nil {
+			log.Warnf("Failed to close response body, error: %s", cerr)
 		}
 	}()
 
-	body, err = ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return []byte{}, response.StatusCode, fmt.Errorf("failed to read response body, error: %s", err)
+		return nil, nil, fmt.Errorf("failed to read response body, error: %s", err)
 	}
 
 	if response.StatusCode < http.StatusOK || response.StatusCode > http.StatusMultipleChoices {
-		return body, response.StatusCode, errors.New("non success status code")
-	}
-
-	return body, response.StatusCode, nil
-}
-
-// RunRequest ...
-func RunRequest(client *Client, req *http.Request, requestResponse interface{}) (interface{}, []byte, error) {
-	body, statusCode, err := performRequest(client, req)
-	if err != nil {
-		return nil, nil, fmt.Errorf("Response status: %d - Body: %s", statusCode, string(body))
+		return nil, nil, fmt.Errorf("Response status: %d - Body: %s", response.StatusCode, string(body))
 	}
 
 	// Parse JSON body

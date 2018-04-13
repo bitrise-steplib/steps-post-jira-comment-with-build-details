@@ -34,7 +34,6 @@ workflows:
 
  # ----------------------------------------------------------------
  # --- Utility workflows
-
   dep-update:
     title: Dep update
     description: |
