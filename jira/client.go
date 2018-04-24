@@ -116,6 +116,13 @@ func (client *Client) postIssueComment(comment Comment, ch chan response) {
 		return
 	}
 
+	requestBytes, err := httputil.DumpRequest(request, true)
+	if err != nil {
+		ch <- response{comment.IssuKey, err}
+		return
+	}
+	log.Debugf("Request: %v", string(requestBytes))
+
 	// Perform request
 	_, body, err := client.performRequest(request, nil)
 	log.Debugf("Body: %s", string(body))
@@ -138,13 +145,6 @@ func createRequest(requestMethod string, url string, headers map[string]string, 
 	}
 
 	addHeaders(req, headers)
-
-	requestBytes, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		return nil, err
-	}
-	log.Debugf("Request: %v", string(requestBytes))
-
 	return req, nil
 }
 

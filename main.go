@@ -42,8 +42,6 @@ func main() {
 	if err := client.PostIssueComments(comments); err != nil {
 		failf("Posting comments failed with error: %s", err)
 	}
-
-	fmt.Println()
 }
 
 func generateBase64APIToken(userName string, apiToken string) string {
