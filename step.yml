@@ -1,0 +1,73 @@
+
+title: Post Jira Comment
+summary: Post comment to an issue at Jira.
+description: |-
+  Post comment to an issue at Jira with the build params. 
+  - Public download page
+  - Build number
+  - Author
+  - Git branch
+  - Commit hash
+  - Commit message
+website: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
+source_code_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details.git
+support_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details/issues
+host_os_tags:
+  - osx-10.10
+  - ubuntu-16.04
+
+type_tags:
+  - notification
+
+is_requires_admin_user: false
+is_always_run: false
+is_skippable: true
+
+toolkit:
+  go:
+    package_name: github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
+
+inputs:
+  - user_name:
+    opts:
+      title: Jira user name
+      summary: User name on Jira (user's email).
+      description: User name on Jira (user's email).
+      is_required: true
+
+  - api_token:
+    opts:
+      title: Jira api token
+      summary: Api token generated on Jira.
+      description: Api token generated on Jira.
+      is_required: true
+
+  - issue_keys:
+    opts:
+      title: Jira issue keys
+      summary: Jira issue keys separatad with `|`
+      description: Jira issue keys separatad with `|`
+      is_required: true
+
+  - base_url:
+    opts:
+      title: Jira base URL.
+      summary: URL of the presonal Jira software.
+      description: URL of the presonal Jira software.
+      is_required: true
+
+  - build_message: |
+      *$BITRISE_APP_TITLE* build *$BITRISE_BUILD_NUMBER* is now available: [Download|$BITRISE_PUBLIC_INSTALL_PAGE_URL]
+      ||Build number|$BITRISE_BUILD_NUMBER|
+      ||Author|$GIT_CLONE_COMMIT_AUTHOR_NAME|
+      ||Branch|$BITRISE_GIT_BRANCH|
+      ||Commit hash|$GIT_CLONE_COMMIT_HASH|
+      ||Commit message|$GIT_CLONE_COMMIT_MESSAGE_SUBJECT|
+
+      [Show build details|$BITRISE_BUILD_URL]
+    opts:
+      title: "Build message"
+      summary: "The content of the build message that will be posted"
+      description: "The content of the build message that will be posted. You can use markdown. Details [here|https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all]"
+      is_required: true
+      
