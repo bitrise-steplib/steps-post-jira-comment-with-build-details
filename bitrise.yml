@@ -3,7 +3,7 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - BITRISE_STEP_VERSION: "0.9.0"
+  - BITRISE_STEP_VERSION: "1.0.0"
 
   - BITRISE_JIRA_USER_NAME: $BITRISE_JIRA_USER_NAME
   - BITRISE_JIRA_API_TOKEN: $BITRISE_JIRA_API_TOKEN
@@ -63,7 +63,7 @@ workflows:
   share-this-step:
     envs:
       # if you want to share this step into a bitrise-steplib
-      - BITRISE_STEP_ID: post-jira-comment
+      - BITRISE_STEP_ID: post-jira-comment-with-build-details
       - BITRISE_STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
       - MY_bitrise-steplib_REPO_FORK_GIT_URL: $MY_bitrise-steplib_REPO_FORK_GIT_URL
       - BITRISE_STEP_VERSION: $BITRISE_STEP_VERSION
