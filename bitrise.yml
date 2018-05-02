@@ -3,7 +3,7 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - BITRISE_STEP_VERSION: "0.9.0"
+  - BITRISE_STEP_VERSION: "1.0.0"
 
   - BITRISE_JIRA_USER_NAME: $BITRISE_JIRA_USER_NAME
   - BITRISE_JIRA_API_TOKEN: $BITRISE_JIRA_API_TOKEN
