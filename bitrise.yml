@@ -32,8 +32,8 @@ workflows:
         - issue_keys: ${BITRISE_JIRA_ISSUE_KEYS}
         - base_url: ${BITRISE_JIRA_BASE_URL}
 
- # ----------------------------------------------------------------
- # --- Utility workflows
+  # ----------------------------------------------------------------
+  # --- Utility workflows
   dep-update:
     title: Dep update
     description: |
@@ -48,6 +48,19 @@ workflows:
             go get -u -v github.com/golang/dep/cmd/dep
             dep ensure -v
             dep ensure -v -update
+
+  # --- workflow to create Release version
+  create-release:
+    steps:
+    - script:
+        title:
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            go get -u github.com/bitrise-tools/releaseman
+            export CI=true
+            releaseman create --version "$BITRISE_STEP_VERSION"
 
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
