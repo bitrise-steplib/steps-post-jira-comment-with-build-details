@@ -12,9 +12,6 @@ description: |-
 website: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
 source_code_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details.git
 support_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details/issues
-host_os_tags:
-  - osx-10.10
-  - ubuntu-16.04
 
 type_tags:
   - notification
@@ -34,13 +31,17 @@ inputs:
       summary: User name on Jira (user's email).
       description: User name on Jira (user's email).
       is_required: true
-
+      is_expand: true
+      is_sensitive: true
+      
   - api_token:
     opts:
       title: Jira api token
       summary: Api token generated on Jira.
       description: Api token generated on Jira.
       is_required: true
+      is_expand: true
+      is_sensitive: true
 
   - issue_keys:
     opts:
@@ -55,6 +56,8 @@ inputs:
       summary: URL of the presonal Jira software.
       description: URL of the presonal Jira software.
       is_required: true
+      is_expand: true
+      is_sensitive: true
 
   - build_message: |
       *$BITRISE_APP_TITLE* build *$BITRISE_BUILD_NUMBER* is now available: [Download|$BITRISE_PUBLIC_INSTALL_PAGE_URL]
