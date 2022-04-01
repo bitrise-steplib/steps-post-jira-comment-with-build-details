@@ -65,8 +65,8 @@ inputs:
   - issue_keys:
     opts:
       title: Jira issue keys
-      summary: Jira issue keys separatad with `|`
-      description: Jira issue keys separatad with `|`
+      summary: Jira issue keys separated with `|`
+      description: Jira issue keys separated with `|`
       is_required: true
 
   - base_url:
