@@ -1,14 +1,33 @@
-
 title: Post Jira Comment
-summary: Post comment to an issue at Jira.
-description: |-
-  Post comment to an issue at Jira with the build params. 
-  - Public download page
-  - Build number
-  - Author
-  - Git branch
-  - Commit hash
-  - Commit message
+summary: Post comment to a Jira issue.
+description: |
+  The Step adds a comment to a Jira issue. Using this Step, you can attach your build parameters to a Jira issue, or you can add any comment using Markdown.
+
+  ### Configuring the Step
+
+  1. Add your Jira email address as a Secret Env Var in the **Jira user name** input.
+  1. Add your Jira API token in the Jira api token input. 
+     You can generate your API token according to [this guide](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+  1. Add your Jira issue key to the **Jira issue keys** input. You can add multiple Jira issues separated with the `|` character. 
+  1. Add your Jira base URL to the **Jira base URL.** input. 
+  1. Add the comment you would like to add as a comment to your Jira issue to the Build message input. You can add any information here using Markdown. By default, this will contain the following Build parameters:
+     * Public download page
+     * Build number
+     * Author
+     * Git branch
+     * Commit hash
+     * Commit message
+
+  ### Useful links
+
+  * [Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
+  * [What is an issue?](https://support.atlassian.com/jira-software-cloud/docs/what-is-an-issue/)
+  * [How to find your site URL to set up the Jira Data Center and Server mobile app](https://confluence.atlassian.com/jirakb/how-to-find-your-site-url-to-set-up-the-jira-data-center-and-server-mobile-app-954244798.html)
+
+  ### Related Steps
+
+  * [Send a Slack message](https://www.bitrise.io/integrations/steps/slack)
+
 website: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details
 source_code_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details.git
 support_url: https://github.com/bitrise-steplib/steps-post-jira-comment-with-build-details/issues
@@ -53,8 +72,8 @@ inputs:
   - base_url:
     opts:
       title: Jira base URL.
-      summary: URL of the presonal Jira software.
-      description: URL of the presonal Jira software.
+      summary: URL of the personal Jira software.
+      description: URL of the personal Jira software.
       is_required: true
       is_expand: true
       is_sensitive: true
