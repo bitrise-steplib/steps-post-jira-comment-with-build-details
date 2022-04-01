@@ -9,7 +9,7 @@ description: |
   1. Add your Jira API token to the **Jira API token** input. 
      You can generate your API token according to [this guide](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
   1. Add your Jira issue key to the **Jira issue keys** input. You can add multiple Jira issues separated with the `|` character. 
-  1. Add your Jira base URL to the **Jira base URL.** input. 
+  1. Add your Jira base URL to the **Jira base URL** input. 
   1. Add the comment you would like to attach to your Jira issue in the **Build message** input. You can add any information here using Markdown. By default, this will contain the following Build parameters:
      * Public download page
      * Build number
@@ -71,7 +71,7 @@ inputs:
 
   - base_url:
     opts:
-      title: Jira base URL.
+      title: Jira base URL
       summary: URL of the personal Jira software.
       description: URL of the personal Jira software.
       is_required: true
